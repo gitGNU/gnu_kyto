@@ -35,19 +35,14 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 
-import com.cloudgarden.resource.SWTResourceManager;
+
 
 public class TaskList extends CTabItem
 {
 	private Tree tasktree;
 	protected Widget lastSelection;
 	private HashMap<String, TaskData> datatree;
-	{
-		//Register as a resource user - SWTResourceManager will
-		//handle the obtaining and disposing of resources
-		SWTResourceManager.registerResourceUser(this);
-	}
-
+	
 	public TaskList(CTabFolder parent, int style)
    {
 	   super(parent, style);

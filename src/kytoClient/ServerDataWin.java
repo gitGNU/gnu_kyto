@@ -19,7 +19,6 @@
  *
  */
 package kytoClient;
-import com.cloudgarden.resource.SWTResourceManager;
 
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.FormAttachment;
@@ -76,14 +75,7 @@ public class ServerDataWin extends org.eclipse.swt.widgets.Dialog {
 		try {
 			Shell parent = getParent();
 			dialogShell = new Shell(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
-
-			{
-				//Register as a resource user - SWTResourceManager will
-				//handle the obtaining and disposing of resources
-				SWTResourceManager.registerResourceUser(dialogShell);
-			}
-			
-			
+		
 			dialogShell.setLayout(new FormLayout());
 			{
 				buttonOk = new Button(dialogShell, SWT.PUSH | SWT.CENTER);

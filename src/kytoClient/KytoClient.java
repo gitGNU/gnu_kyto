@@ -38,9 +38,6 @@ import Ice.Identity;
 import IceStorm.TopicManagerPrx;
 import IceStorm.TopicPrx;
 
-import com.cloudgarden.resource.SWTResourceManager;
-
-
 /**
  * @author miguel
  */
@@ -84,12 +81,7 @@ public class KytoClient extends Ice.Application
 		this.shell = new Shell(display);
 		shell.setText("Keep Your Tasks Organized");
 		shell.setLayout(new FillLayout());
-		{
-			//Register as a resource user - SWTResourceManager will
-			//handle the obtaining and disposing of resources
-			SWTResourceManager.registerResourceUser(shell);
-		}
-		
+	
 		{
 			cTabFolder = new CTabFolder(shell, SWT.V_SCROLL);
 			cTabFolder.setLayout(new FillLayout());
@@ -97,8 +89,8 @@ public class KytoClient extends Ice.Application
 			cTabFolder.setSimple(false);
 			cTabFolder.setMRUVisible(true);
 			cTabFolder.setSelectionBackground(
-					new Color[]{SWTResourceManager.getColor(0xff, 0xff, 0xff), 
-							SWTResourceManager.getColor(0xbe, 0xc9, 0xd0)},
+					new Color[]{new Color(display, 0xff, 0xff, 0xff), 
+							new Color(display, 0xbe, 0xc9, 0xd0)},
 					new int[]{ 75 },
 					true);
 			cTabFolder.setSelection(0);
