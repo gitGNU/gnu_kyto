@@ -1,0 +1,5 @@
+IceStorm.InstanceName=Kyto
+IceStorm.TopicManager.Proxy=Kyto/TopicManager:default -p 13467
+IceStorm.TopicManager.Endpoints=tcp -p 13467
+IceStorm.Publish.Endpoints=tcp
+Freeze.DbEnv.IceStorm.DbHome=db
