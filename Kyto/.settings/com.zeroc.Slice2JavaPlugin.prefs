@@ -1,6 +1,6 @@
-#Sat Apr 25 21:15:47 GMT 2009
+#Sat Jun 13 14:44:39 GMT 2009
 console=true
 eclipse.preferences.version=1
 ice=true
 iceIncludes=true
-includes=../../../../usr/share/slice
+includes=../../../../usr/share/slice;../../../../../usr/share/slice

@@ -1,20 +1,36 @@
-/**
- * 
- */
-package Server1;
+/** Copyright (C) 2009 Miguel Ángel García Martínez */
 
-import java.util.Collection;
+/**
+ * This file is part of KYTO.
+ *
+ *   KYTO is free software; you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation; either version 3 of the License, or 
+ * (at your option) any later version.
+
+ *   KYTO is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+ * GNU General Public License for more details.
+
+ *   You should have received a copy of the GNU General Public License 
+ * along with Pygrep (maybe in file "COPYING"); if not, write to the Free Software 
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ */
+package ServerLocal;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import Freeze.Evictor;
-import Freeze.EvictorIterator;
 import Ice.Current;
 import Ice.Identity;
 import Ice.ObjectAdapter;
 import KytoTries.Task;
-import KytoTries.TaskDictHelper;
+import KytoTries.TaskData;
 import KytoTries.TaskPrx;
 import KytoTries.TaskPrxHelper;
 
@@ -35,15 +51,18 @@ public class TaskI extends Task
 	
 	public TaskI ()
 	{
-		
+		this.title = new String ("New Task");
 	}
 	
 	public TaskI (Identity id)
 	{
-		this._id = id;
+		this._id = id;	
 		this.title = new String("New Task");
 	}
-
+	
+	
+	
+	
 	@Override
    public TaskPrx createChildTask(Current __current)
    {
@@ -51,13 +70,13 @@ public class TaskI extends Task
 	   
 	   TaskI task = new TaskI(id);
 	   task.dirty = true;
-	   task.parent = TaskPrxHelper.uncheckedCast(__current.adapter.createProxy(__current.id));
-	   task.children = new HashMap<Ice.Identity, TaskPrx>();
-		
+	   task.parent = (Identity) __current.id.clone();
+	   task.children = new HashMap<Ice.Identity,String>();
+	   
+	   children.put(id, null);
+
 	   TaskPrx proxy = TaskPrxHelper.uncheckedCast(_evictor.add(task,id));
-	   
-	   children.put(id, proxy);
-	   
+
 	   System.out.println ("CreateChildTask");
 	   
 	   return proxy;
@@ -66,24 +85,48 @@ public class TaskI extends Task
 	@Override
    public TaskPrx[] getTaskChildren(Current __current)
    {
-		TaskPrx[] tasklist = new TaskPrx[children.size()];
-		
-		Iterator<TaskPrx> iter = children.values().iterator();
-		for (int i=0; i<children.size() && iter.hasNext(); ++i)
-		//while (iter.hasNext())
-		{
-			//TaskPrx data = iter.next();
-			
-			tasklist[i] = iter.next();
-		}
-		
-		return tasklist;
+	   System.out.println ("getTaskChildren");
 
+		Set<Identity> keyset = children.keySet();
+		TaskPrx[] retval = new TaskPrx [keyset.size()];
+		Iterator<Identity> iterator = keyset.iterator();
+		for (int i = 0; i < keyset.size(); ++i)
+		{
+			retval[i] = TaskPrxHelper.uncheckedCast(
+	            __current.adapter.createProxy(iterator.next()));
+		}
+		return retval;
    }
 
 	@Override
-   public String getTitle(Current __current)
+   public TaskData getTaskData(Current __current)
    {
-	   return title;
+		TaskData retval = new TaskData();
+		retval.title    = new String(title);
+		retval.parent   = (Identity) parent.clone();
+		retval.counter  = counter;
+		retval.deleted  = deleted;
+		
+		retval.children = new HashMap<Identity, String>();
+		Set<Identity> keylist = children.keySet();
+		for (Iterator<Identity> iter = keylist.iterator(); iter.hasNext(); )
+			retval.children.put(iter.next(), null); 
+	   return retval;
+   }
+
+	@Override
+   public TaskData updateTask(TaskData data, Current __current)
+   {
+	   this.parent = (Identity) data.parent.clone();
+	   this.title  = data.title;
+	   this.counter = data.counter;
+	   this.deleted = data.deleted;
+	   
+	   children.clear();
+	   
+		Set<Identity> keylist = data.children.keySet();
+		for (Iterator<Identity> iter = keylist.iterator(); iter.hasNext(); )
+			children.put(iter.next(), null); 	   
+	   return data;
    }
 }

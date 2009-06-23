@@ -1,7 +1,26 @@
+/** Copyright (C) 2009 Miguel Ángel García Martínez */
+
 /**
- * 
+ * This file is part of KYTO.
+ *
+ *   KYTO is free software; you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation; either version 3 of the License, or 
+ * (at your option) any later version.
+
+ *   KYTO is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+ * GNU General Public License for more details.
+
+ *   You should have received a copy of the GNU General Public License 
+ * along with Pygrep (maybe in file "COPYING"); if not, write to the Free Software 
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  */
-package Server1;
+package ServerLocal;
+
+import java.util.HashMap;
 
 import Ice.Identity;
 import Ice.ObjectPrx;
@@ -11,11 +30,11 @@ import KytoTries.Task;
  * @author miguel
  *
  */
-public class Server1 extends Ice.Application
+public class ServerLocal extends Ice.Application
 {
 	private String _envName;
 
-	public Server1(String envName)
+	public ServerLocal(String envName)
    {
        _envName = envName;
    }
@@ -25,7 +44,7 @@ public class Server1 extends Ice.Application
 	 */
 	public static void main(String[] args)
 	{
-		Server1 app = new Server1("db");
+		ServerLocal app = new ServerLocal("db");
       int status = app.main("Server", args, "config.server");
       System.exit(status);
 
@@ -40,27 +59,34 @@ public class Server1 extends Ice.Application
 	   communicator().addObjectFactory(factory, Task.ice_staticId());
 	   
 	   // Create object adapter (stored in the _adapter static member)
-	   Ice.ObjectAdapter adapter = communicator().createObjectAdapterWithEndpoints("KytoTries", "tcp -h localhost -p 13470");
+	   Ice.ObjectAdapter adapter = communicator().createObjectAdapterWithEndpoints("KytoTries", "tcp -h localhost -p 13471");
 	   
 	   TaskI._adapter = adapter;
 	   
 	   // Create the Freeze evictor (Stored in the _evictor static member)
 	   Freeze.ServantInitializer init = new ElementInitializer();
-	   Freeze.Evictor evictor = Freeze.Util.createTransactionalEvictor (adapter, 
+	   /*
+	   Index[] idx = new Index[1];
+	   idx[0] = new idxId("");
+	   */
+	   TaskI._evictor = Freeze.Util.createTransactionalEvictor (adapter, 
 	   		_envName, "evictorKyto", null, init, null, true);
-	   TaskI._evictor = evictor;
 	   
-	   adapter.addServantLocator(evictor, "");
+	   
+	   adapter.addServantLocator(TaskI._evictor, "");
 	   
 	   // Create the root node if it doesn't exists
 	   Identity rootId = Ice.Util.stringToIdentity("KytoTries");
-	   if (!evictor.hasObject(rootId))
+	   if (!TaskI._evictor.hasObject(rootId))
 	   {
 	   	TaskI root = new TaskI();
 	   	root.dirty = true;
 	   	root.title = "/";
+	   	root.children = new HashMap<Ice.Identity,String>();
+	   	root._id = rootId;
+	   	root.parent = Ice.Util.stringToIdentity("none");
 	   	
-	   	ObjectPrx prx = evictor.add(root, rootId);
+	   	ObjectPrx prx = TaskI._evictor.add(root, rootId);
 	   	System.out.println("New servant -> " + communicator().proxyToString(prx));
 	   }
 	   
